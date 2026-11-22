@@ -14,6 +14,8 @@ npm install
 npm run dev
 ```
 
+En desarrollo la aplicación estará disponible en `http://localhost:5173/`. La ruta `/q_comemos_pedidos/` se usa únicamente para GitHub Pages.
+
 ## Verificaciones
 
 ```sh
