@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { firebaseConfigured, getFirebaseServices } from "../firebase";
 
 const useProductos = () => {
   const [productos, setProductos] = useState([]);
@@ -7,6 +8,52 @@ const useProductos = () => {
 
   useEffect(() => {
     const controller = new AbortController();
+
+    if (firebaseConfigured) {
+      let unsubscribe;
+
+      getFirebaseServices()
+        .then(({ db, firestoreSdk }) => {
+          if (controller.signal.aborted) return;
+
+          unsubscribe = firestoreSdk.onSnapshot(
+            firestoreSdk.query(firestoreSdk.collection(db, "products")),
+            (snapshot) => {
+              const items = snapshot.docs
+                .map((productDocument) => ({
+                  ...productDocument.data(),
+                  id: productDocument.id,
+                }))
+                .sort((a, b) => {
+                  const numericDifference = Number(a.id) - Number(b.id);
+                  return Number.isFinite(numericDifference) && numericDifference !== 0
+                    ? numericDifference
+                    : String(a.nombre || "").localeCompare(String(b.nombre || ""), "es");
+                });
+
+              setProductos(items);
+              setError("");
+              setCargando(false);
+            },
+            (errorCarga) => {
+              console.error("No se pudo cargar el catálogo de Firestore:", errorCarga);
+              setError("No pudimos cargar el menú. Revisá la configuración de Firebase e intentá de nuevo.");
+              setCargando(false);
+            },
+          );
+        })
+        .catch((errorCarga) => {
+          if (controller.signal.aborted) return;
+          console.error("No se pudo iniciar el catálogo de Firestore:", errorCarga);
+          setError("No pudimos conectar con Firebase para cargar el menú.");
+          setCargando(false);
+        });
+
+      return () => {
+        controller.abort();
+        unsubscribe?.();
+      };
+    }
 
     const cargarProductos = async () => {
       try {

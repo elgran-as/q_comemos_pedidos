@@ -8,7 +8,9 @@ const Carrito = () => {
     removeFromCart,
     updateQuantity,
     clearCart,
-    getTotalPrice
+    getTotalPrice,
+    persistenceError,
+    cartLoading,
   } = useCart();
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [orderNumber, setOrderNumber] = useState("");
@@ -16,6 +18,10 @@ const Carrito = () => {
   const subtotal = getTotalPrice();
   const envio = deliveryMethod === "delivery" && subtotal < 20000 ? 1800 : 0;
   const total = subtotal + envio;
+
+  if (cartLoading) {
+    return <p className="catalog-feedback" role="status">Recuperando tu carrito...</p>;
+  }
 
   const handleCheckout = (event) => {
     event.preventDefault();
@@ -43,6 +49,9 @@ const Carrito = () => {
   if (cart.length === 0) {
     return (
       <section className="cart-empty">
+        {persistenceError && (
+          <p className="cart-persistence-error" role="alert">{persistenceError}</p>
+        )}
         <span aria-hidden="true">🛍️</span>
         <h1>Tu pedido está vacío</h1>
         <p>Fijate en la carta y elegí algo rico para compartir.</p>
@@ -53,6 +62,9 @@ const Carrito = () => {
 
   return (
     <section className="cart-section">
+      {persistenceError && (
+        <p className="cart-persistence-error" role="alert">{persistenceError}</p>
+      )}
       <div className="section-header">
         <span className="eyebrow">YA CASI ESTÁ</span>
         <h1>Tu pedido</h1>

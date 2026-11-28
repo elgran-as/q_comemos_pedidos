@@ -6,7 +6,7 @@ import useProductos from "../hooks/useProductos";
 const ProductoDetail = () => {
   const { id } = useParams();
   const { productos, cargando, error } = useProductos();
-  const producto = productos.find((item) => item.id === Number(id));
+  const producto = productos.find((item) => String(item.id) === id);
   const [cantidad, setCantidad] = useState(1);
   const [agregado, setAgregado] = useState(false);
 
